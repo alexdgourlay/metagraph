@@ -1,0 +1,13 @@
+[package]
+name = "metagraph"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+scraper="0.17"
+url = { version = "2.3", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"], optional = false }
+serde_json = { version = "1.0", optional = false }
+strum = { version = "0.25", features = ["derive"] }
