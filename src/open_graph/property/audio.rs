@@ -14,7 +14,7 @@ impl GraphObject for Audio {
         "audio"
     }
 
-    fn from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
+    fn update_from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
         match tags {
             [] | ["url"] => {
                 self.url = content.into();

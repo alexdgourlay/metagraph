@@ -1,9 +1,5 @@
 use crate::error::ParseError;
 
-pub trait RootGraphObject: GraphObject {
-    fn attribute() -> &'static str;
-}
-
 pub trait GraphObject {
     fn prefix() -> &'static str;
 
@@ -14,7 +10,7 @@ pub trait GraphObject {
         }
     }
 
-    fn from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError>;
+    fn update_from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError>;
 }
 
 pub trait Extend {
@@ -25,11 +21,11 @@ impl<TObject: GraphObject + Default> Extend for Vec<TObject> {
     fn extend_or_update_last(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
         if TObject::should_create_new(tags) {
             let mut graph_object = TObject::default();
-            graph_object.from(tags, content)?;
+            graph_object.update_from(tags, content)?;
             self.push(graph_object);
         } else {
             if let Some(graph_object) = self.last_mut() {
-                graph_object.from(tags, content)?;
+                graph_object.update_from(tags, content)?;
             }
         }
         Ok(())

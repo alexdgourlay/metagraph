@@ -13,7 +13,7 @@ impl GraphObject for Image {
         "image"
     }
 
-    fn from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
+    fn update_from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
         match tags {
             [] | ["src"] => {
                 self.url = content.into();

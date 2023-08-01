@@ -13,7 +13,7 @@ impl GraphObject for Creator {
         "creator"
     }
 
-    fn from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
+    fn update_from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
         match tags {
             [] => {
                 self.username = content.into();

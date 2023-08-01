@@ -4,7 +4,7 @@ use std::str::FromStr;
 use super::property::{Audio, Determiner, Image, Locale, Video};
 use crate::{
     error::ParseError,
-    graph_object::{Extend, GraphObject, RootGraphObject},
+    graph_object::{Extend, GraphObject},
 };
 
 #[derive(Default, Debug, Serialize)]
@@ -26,7 +26,7 @@ impl GraphObject for OpenGraphObject {
         "og"
     }
 
-    fn from(&mut self, property_tags: &[&str], content: &str) -> Result<(), ParseError> {
+    fn update_from(&mut self, property_tags: &[&str], content: &str) -> Result<(), ParseError> {
         if let Some(first_tag) = property_tags.first() {
             if *first_tag == Image::prefix() {
                 self.images
@@ -70,19 +70,11 @@ impl GraphObject for OpenGraphObject {
                 "locale" => {
                     self.locale = Some(Locale::new(content.into()));
                 }
-                _ => {
-                    return Err(ParseError::InvalidPropertyTag)
-                }
+                _ => return Err(ParseError::InvalidPropertyTag),
             }
         }
 
         Ok(())
-    }
-}
-
-impl RootGraphObject for OpenGraphObject {
-    fn attribute() -> &'static str {
-        "property"
     }
 }
 
@@ -93,35 +85,33 @@ mod test {
     #[test]
     fn update() {
         let mut graph_object = OpenGraphObject::default();
-        graph_object.from(&vec!["title"], "title").unwrap();
+        graph_object.update_from(&vec!["title"], "title").unwrap();
         assert!(graph_object.title.is_some());
 
-        graph_object.from(&vec!["url"], "url").unwrap();
+        graph_object.update_from(&vec!["url"], "url").unwrap();
         assert!(graph_object.url.is_some());
 
         graph_object
-            .from(&vec!["description"], "description")
+            .update_from(&vec!["description"], "description")
             .unwrap();
         assert!(graph_object.description.is_some());
 
-        graph_object
-            .from(&vec!["determiner"], "a")
-            .unwrap();
+        graph_object.update_from(&vec!["determiner"], "a").unwrap();
         assert!(graph_object.determiner.is_some());
 
-        graph_object.from(&vec!["site_name"], "site_name").unwrap();
+        graph_object.update_from(&vec!["site_name"], "site_name").unwrap();
         assert!(graph_object.site_name.is_some());
 
-        graph_object.from(&vec!["image"], "image").unwrap();
+        graph_object.update_from(&vec!["image"], "image").unwrap();
         assert!(graph_object.images.is_some());
 
-        graph_object.from(&vec!["audio"], "audio").unwrap();
+        graph_object.update_from(&vec!["audio"], "audio").unwrap();
         assert!(graph_object.audio.is_some());
 
-        graph_object.from(&vec!["video"], "video").unwrap();
+        graph_object.update_from(&vec!["video"], "video").unwrap();
         assert!(graph_object.video.is_some());
 
-        graph_object.from(&vec!["locale"], "locale").unwrap();
+        graph_object.update_from(&vec!["locale"], "locale").unwrap();
         assert!(graph_object.locale.is_some());
     }
 }

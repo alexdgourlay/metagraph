@@ -1,9 +1,6 @@
 use serde::Serialize;
 
-use crate::{
-    error::ParseError,
-    graph_object::{GraphObject, RootGraphObject},
-};
+use crate::{error::ParseError, graph_object::GraphObject};
 
 #[derive(Default, Debug, Serialize)]
 pub struct TwitterGraphObject {
@@ -19,7 +16,7 @@ impl GraphObject for TwitterGraphObject {
         "twitter"
     }
 
-    fn from(&mut self, property_tags: &[&str], content: &str) -> Result<(), ParseError> {
+    fn update_from(&mut self, property_tags: &[&str], content: &str) -> Result<(), ParseError> {
         if let Some(first_tag) = property_tags.first() {
             match *first_tag {
                 "card" => {
@@ -41,11 +38,5 @@ impl GraphObject for TwitterGraphObject {
             }
         }
         Ok(())
-    }
-}
-
-impl RootGraphObject for TwitterGraphObject {
-    fn attribute() -> &'static str {
-        "name"
     }
 }

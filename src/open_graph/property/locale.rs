@@ -23,7 +23,7 @@ impl GraphObject for Locale {
         "locale"
     }
     
-    fn from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
+    fn update_from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
         match tags {
             [] => {
                 self.locale = content.into();
