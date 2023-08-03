@@ -4,8 +4,8 @@ use std::str::FromStr;
 use super::property::{Audio, Determiner, Image, Locale, Video};
 use crate::{
     error::ParseError,
-    meta_data::MetaData,
     graph_object::{Extend, GraphObject},
+    meta_data::MetaData,
 };
 
 #[derive(Default, Debug, Serialize)]
@@ -78,13 +78,18 @@ impl GraphObject for OpenGraphObject {
 
 #[cfg(test)]
 mod test {
+    use url::Url;
+
     use super::*;
 
     #[test]
     fn update() {
         let mut graph_object = OpenGraphObject::default();
+        let site_url = Url::parse("http://x.com").unwrap();
+
         graph_object
             .update_from(MetaData {
+                site_url: &site_url,
                 tags: &["title"],
                 content: "title",
             })
@@ -93,6 +98,7 @@ mod test {
 
         graph_object
             .update_from(MetaData {
+                site_url: &site_url,
                 tags: &["type"],
                 content: "type",
             })
@@ -101,6 +107,7 @@ mod test {
 
         graph_object
             .update_from(MetaData {
+                site_url: &site_url,
                 tags: &["url"],
                 content: "url",
             })
@@ -109,6 +116,7 @@ mod test {
 
         graph_object
             .update_from(MetaData {
+                site_url: &site_url,
                 tags: &["description"],
                 content: "description",
             })
@@ -117,14 +125,16 @@ mod test {
 
         graph_object
             .update_from(MetaData {
+                site_url: &site_url,
                 tags: &["determiner"],
-                content: "determiner",
+                content: "",
             })
             .unwrap();
         assert!(graph_object.determiner.is_some());
 
         graph_object
             .update_from(MetaData {
+                site_url: &site_url,
                 tags: &["site_name"],
                 content: "site_name",
             })
@@ -133,28 +143,38 @@ mod test {
 
         graph_object
             .update_from(MetaData {
+                site_url: &site_url,
                 tags: &["image"],
                 content: "image",
             })
             .unwrap();
         assert!(graph_object.images.is_some());
 
-        graph_object.update_from(MetaData {
-            tags: &["audio"],
-            content: "audio",
-        }).unwrap();
+        graph_object
+            .update_from(MetaData {
+                site_url: &site_url,
+                tags: &["audio"],
+                content: "audio",
+            })
+            .unwrap();
         assert!(graph_object.audio.is_some());
 
-        graph_object.update_from(MetaData {
-            tags: &["video"],
-            content: "video",
-        }).unwrap();
+        graph_object
+            .update_from(MetaData {
+                site_url: &site_url,
+                tags: &["video"],
+                content: "video",
+            })
+            .unwrap();
         assert!(graph_object.video.is_some());
 
-        graph_object.update_from(MetaData {
-            tags: &["locale"],
-            content: "locale",
-        }).unwrap();
+        graph_object
+            .update_from(MetaData {
+                site_url: &site_url,
+                tags: &["locale"],
+                content: "locale",
+            })
+            .unwrap();
         assert!(graph_object.locale.is_some());
     }
 }

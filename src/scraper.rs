@@ -61,6 +61,7 @@ pub trait Scraper<TRootGraphObject: GraphObject + Default> {
                 let property_tags: Vec<&str> = property.split(":").collect();
 
                 let meta_data = MetaData {
+                    site_url: &url,
                     tags: &property_tags,
                     content,
                 };
@@ -166,7 +167,7 @@ mod tests {
     fn scrape_image() {
         let result: OpenGraphObject = scrape(
             r#"<head>
-                        <meta property="og:image:url" content="X" />
+                        <meta property="og:image:url" content="http://x.com/image.jpg" />
                         <meta property="og:image:type" content="image/jpeg" />
                         <meta property="og:image:secure_url" content="X" />
                         <meta property="og:image:width" content="10" />
@@ -177,7 +178,7 @@ mod tests {
         assert_eq!(
             result.images,
             Some(vec![Image {
-                url: "X".into(),
+                url: "http://x.com/image.jpg".into(),
                 media_type: Some("image/jpeg".into()),
                 secure_url: Some("X".into()),
                 width: Some(10),
@@ -218,4 +219,20 @@ mod tests {
         );
         assert!(result.images.is_none());
     }
+
+    #[test]
+    fn scrape_image_relative_url() {
+        let result: OpenGraphObject = scrape(
+            r#"<head>
+                        <meta property="og:image" content="./image.jpg" />
+                    </head>"#,
+        );
+        assert_eq!(result.images, Some(
+            vec![Image {
+                url: "http://x.com/image.jpg".into(),
+                ..Image::default()
+            }]
+        ))
+    }
+
 }

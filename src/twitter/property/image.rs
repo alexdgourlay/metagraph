@@ -16,7 +16,7 @@ impl GraphObject for Image {
     fn update_from(&mut self, data: MetaData) -> Result<(), ParseError> {
         match data.tags {
             [] | ["src"] => {
-                self.url = data.content.into();
+                self.url = data.normalized_url();
             }
             ["alt"] => {
                 self.alt = Some(data.content.into());

@@ -20,7 +20,7 @@ impl GraphObject for Image {
     fn update_from(&mut self, data: MetaData) -> Result<(), ParseError> {
         match data.tags {
             [] | ["url"] => {
-                self.url = data.content.into();
+                self.url = data.normalized_url();
             }
             ["secure_url"] => {
                 self.secure_url = Some(data.content.into());
