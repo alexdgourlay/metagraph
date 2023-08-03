@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{graph_object::GraphObject, error::ParseError};
+use crate::{error::ParseError, meta_data::MetaData, graph_object::GraphObject};
 
 #[derive(Default, Debug, Serialize)]
 pub struct Locale {
@@ -18,19 +18,18 @@ impl Locale {
 }
 
 impl GraphObject for Locale {
-
     fn prefix() -> &'static str {
         "locale"
     }
-    
-    fn update_from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
-        match tags {
+
+    fn update_from(&mut self, data: MetaData) -> Result<(), ParseError> {
+        match data.tags {
             [] => {
-                self.locale = content.into();
+                self.locale = data.content.into();
             }
             ["alternate"] => {
                 let alternate = self.alternate.get_or_insert_with(|| vec![]);
-                alternate.push(content.into());
+                alternate.push(data.content.into());
             }
             _ => return Err(ParseError::InvalidPropertyTag),
         }

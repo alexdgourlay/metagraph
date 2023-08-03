@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{error::ParseError, graph_object::GraphObject};
+use crate::{error::ParseError, meta_data::MetaData, graph_object::GraphObject};
 
 #[derive(Default, Debug, Serialize)]
 pub struct Audio {
@@ -14,16 +14,16 @@ impl GraphObject for Audio {
         "audio"
     }
 
-    fn update_from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
-        match tags {
+    fn update_from(&mut self, data: MetaData) -> Result<(), ParseError> {
+        match data.tags {
             [] | ["url"] => {
-                self.url = content.into();
+                self.url = data.content.into();
             }
             ["secure_url"] => {
-                self.secure_url = Some(content.into());
+                self.secure_url = Some(data.content.into());
             }
             ["type"] => {
-                self.media_type = Some(content.into());
+                self.media_type = Some(data.content.into());
             }
             _ => return Err(ParseError::InvalidPropertyTag),
         }

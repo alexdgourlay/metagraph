@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{graph_object::GraphObject, error::ParseError};
+use crate::{graph_object::GraphObject, error::ParseError, meta_data::MetaData};
 
 #[derive(Default, Debug, PartialEq, Serialize)]
 pub struct Creator {
@@ -13,13 +13,13 @@ impl GraphObject for Creator {
         "creator"
     }
 
-    fn update_from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
-        match tags {
+    fn update_from(&mut self, data: MetaData) -> Result<(), ParseError> {
+        match data.tags {
             [] => {
-                self.username = content.into();
+                self.username = data.content.into();
             }
             ["id"] => {
-                self.id = Some(content.into());
+                self.id = Some(data.content.into());
             }
             _ => return Err(ParseError::InvalidPropertyTag),
         }

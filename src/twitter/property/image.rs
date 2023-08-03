@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{error::ParseError, graph_object::GraphObject};
+use crate::{error::ParseError, meta_data::MetaData, graph_object::GraphObject};
 
 #[derive(Default, Debug, PartialEq, Serialize)]
 pub struct Image {
@@ -13,13 +13,13 @@ impl GraphObject for Image {
         "image"
     }
 
-    fn update_from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
-        match tags {
+    fn update_from(&mut self, data: MetaData) -> Result<(), ParseError> {
+        match data.tags {
             [] | ["src"] => {
-                self.url = content.into();
+                self.url = data.content.into();
             }
             ["alt"] => {
-                self.alt = Some(content.into());
+                self.alt = Some(data.content.into());
             }
             _ => return Err(ParseError::InvalidPropertyTag),
         }

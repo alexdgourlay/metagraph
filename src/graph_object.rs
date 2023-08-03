@@ -1,4 +1,4 @@
-use crate::error::ParseError;
+use crate::{error::ParseError, meta_data::MetaData};
 
 pub trait GraphObject {
     fn prefix() -> &'static str;
@@ -10,22 +10,22 @@ pub trait GraphObject {
         }
     }
 
-    fn update_from(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError>;
+    fn update_from(&mut self, data: MetaData) -> Result<(), ParseError>;
 }
 
 pub trait Extend {
-    fn extend_or_update_last(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError>;
+    fn extend_or_update_last(&mut self, data: MetaData) -> Result<(), ParseError>;
 }
 
 impl<TObject: GraphObject + Default> Extend for Vec<TObject> {
-    fn extend_or_update_last(&mut self, tags: &[&str], content: &str) -> Result<(), ParseError> {
-        if TObject::should_create_new(tags) {
+    fn extend_or_update_last(&mut self, data: MetaData) -> Result<(), ParseError> {
+        if TObject::should_create_new(data.tags) {
             let mut graph_object = TObject::default();
-            graph_object.update_from(tags, content)?;
+            graph_object.update_from(data)?;
             self.push(graph_object);
         } else {
             if let Some(graph_object) = self.last_mut() {
-                graph_object.update_from(tags, content)?;
+                graph_object.update_from(data)?;
             }
         }
         Ok(())
@@ -33,16 +33,12 @@ impl<TObject: GraphObject + Default> Extend for Vec<TObject> {
 }
 
 impl<TObject: GraphObject + Default> Extend for Option<Vec<TObject>> {
-    fn extend_or_update_last(
-        &mut self,
-        tags: &[&str],
-        content: &str,
-    ) -> Result<(), ParseError> {
-        if self.is_none() && !TObject::should_create_new(tags) {
+    fn extend_or_update_last(&mut self, data: MetaData) -> Result<(), ParseError> {
+        if self.is_none() && !TObject::should_create_new(data.tags) {
             return Ok(());
         } else {
             let vector = self.get_or_insert_with(|| vec![]);
-            vector.extend_or_update_last(tags, content)?;
+            vector.extend_or_update_last(data)?;
             Ok(())
         }
     }

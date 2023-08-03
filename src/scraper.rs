@@ -2,17 +2,23 @@ use scraper::{ElementRef, Html, Selector};
 use std::error::Error;
 use url::Url;
 
-use crate::{graph_object::GraphObject, open_graph::OpenGraphObject, twitter::TwitterGraphObject};
+use crate::{
+    graph_object::GraphObject, meta_data::MetaData, open_graph::OpenGraphObject,
+    twitter::TwitterGraphObject,
+};
 
-pub trait Scraper<TGraphObject: GraphObject + Default> {
-    fn attribute() -> &'static str;
+pub trait Scraper<TRootGraphObject: GraphObject + Default> {
+    /// Get the name of the attribute used for properties.
+    fn attribute() -> &'static str {
+        "property"
+    }
 
     /// Get the CSS selector for meta elements.
     fn selector() -> Selector {
         let selector = format!(
             r#"head > meta[{}^="{}"]"#,
             Self::attribute(),
-            TGraphObject::prefix()
+            TRootGraphObject::prefix()
         );
         Selector::parse(&selector).unwrap()
     }
@@ -23,7 +29,7 @@ pub trait Scraper<TGraphObject: GraphObject + Default> {
             .value()
             .attr(Self::attribute())
             .and_then(|property| {
-                if !property.starts_with(TGraphObject::prefix()) {
+                if !property.starts_with(TRootGraphObject::prefix()) {
                     return None;
                 }
                 return Some(property);
@@ -36,7 +42,7 @@ pub trait Scraper<TGraphObject: GraphObject + Default> {
     }
 
     /// Scrape the document for properties.
-    fn scrape(url: &str, html: &str) -> Result<TGraphObject, Box<dyn Error>> {
+    fn scrape(url: &str, html: &str) -> Result<TRootGraphObject, Box<dyn Error>> {
         // Parsing validates the supplied url.
         let url = Url::parse(url)?;
 
@@ -45,7 +51,7 @@ pub trait Scraper<TGraphObject: GraphObject + Default> {
         let selector = Self::selector();
         let elements = document.select(&selector);
 
-        let mut graph_object = TGraphObject::default();
+        let mut result = TRootGraphObject::default();
 
         for element in elements {
             let property = Self::get_property(&element);
@@ -53,21 +59,23 @@ pub trait Scraper<TGraphObject: GraphObject + Default> {
 
             if let (Some(property), Some(content)) = (property, content) {
                 let property_tags: Vec<&str> = property.split(":").collect();
-                let _ = graph_object.update_from(&property_tags[1..], &content);
+
+                let meta_data = MetaData {
+                    tags: &property_tags,
+                    content,
+                };
+
+                let _ = result.update_from(meta_data.next());
             }
         }
 
-        return Ok(graph_object);
+        return Ok(result);
     }
 }
 
 pub struct OpenGraphScraper {}
 
-impl Scraper<OpenGraphObject> for OpenGraphScraper {
-    fn attribute() -> &'static str {
-        "property"
-    }
-}
+impl Scraper<OpenGraphObject> for OpenGraphScraper {}
 
 pub struct TwitterScraper {}
 
@@ -92,7 +100,7 @@ mod tests {
         fs::read_to_string(document_abs_path).unwrap()
     }
 
-    fn scrape_verge() -> TestGraphObject  {
+    fn scrape_verge() -> TestGraphObject {
         TestScraper::scrape(
             "https://www.theverge.com/",
             &read_document("assets/verge-article.html"),
