@@ -7,7 +7,10 @@ use crate::{
     twitter::TwitterGraphObject,
 };
 
-pub trait Scraper<TRootGraphObject: GraphObject + Default> {
+pub trait Scraper {
+
+    type RootGraphObject: GraphObject + Default;
+
     /// Get the name of the attribute used for properties.
     fn attribute() -> &'static str {
         "property"
@@ -18,7 +21,7 @@ pub trait Scraper<TRootGraphObject: GraphObject + Default> {
         let selector = format!(
             r#"head > meta[{}^="{}"]"#,
             Self::attribute(),
-            TRootGraphObject::prefix()
+            Self::RootGraphObject::prefix()
         );
         Selector::parse(&selector).unwrap()
     }
@@ -29,7 +32,7 @@ pub trait Scraper<TRootGraphObject: GraphObject + Default> {
             .value()
             .attr(Self::attribute())
             .and_then(|property| {
-                if !property.starts_with(TRootGraphObject::prefix()) {
+                if !property.starts_with(Self::RootGraphObject::prefix()) {
                     return None;
                 }
                 return Some(property);
@@ -42,7 +45,7 @@ pub trait Scraper<TRootGraphObject: GraphObject + Default> {
     }
 
     /// Scrape the document for properties.
-    fn scrape(url: &str, html: &str) -> Result<TRootGraphObject, Box<dyn Error>> {
+    fn scrape(url: &str, html: &str) -> Result<Self::RootGraphObject, Box<dyn Error>> {
         // Parsing validates the supplied url.
         let url = Url::parse(url)?;
 
@@ -51,7 +54,7 @@ pub trait Scraper<TRootGraphObject: GraphObject + Default> {
         let selector = Self::selector();
         let elements = document.select(&selector);
 
-        let mut result = TRootGraphObject::default();
+        let mut result = Self::RootGraphObject::default();
 
         for element in elements {
             let property = Self::get_property(&element);
@@ -76,11 +79,16 @@ pub trait Scraper<TRootGraphObject: GraphObject + Default> {
 
 pub struct OpenGraphScraper {}
 
-impl Scraper<OpenGraphObject> for OpenGraphScraper {}
+impl Scraper for OpenGraphScraper {
+    type RootGraphObject = OpenGraphObject;
+}
 
 pub struct TwitterScraper {}
 
-impl Scraper<TwitterGraphObject> for TwitterScraper {
+impl Scraper for TwitterScraper {
+
+    type RootGraphObject = TwitterGraphObject;
+
     fn attribute() -> &'static str {
         "name"
     }

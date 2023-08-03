@@ -4,7 +4,7 @@ use std::str::FromStr;
 use super::property::{Audio, Determiner, Image, Locale, Video};
 use crate::{
     error::ParseError,
-    graph_object::{Extend, GraphObject},
+    graph_object::{Update, GraphObject},
     meta_data::MetaData,
 };
 
