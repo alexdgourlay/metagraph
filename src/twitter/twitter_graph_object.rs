@@ -2,7 +2,7 @@ use serde::Serialize;
 
 use crate::{error::ParseError, graph_object::GraphObject, meta_data::MetaData};
 
-use super::property::{Image, Creator};
+use super::property::{Image, Creator, Player};
 
 #[derive(Default, Debug, Serialize)]
 pub struct TwitterGraphObject {
@@ -12,6 +12,7 @@ pub struct TwitterGraphObject {
     pub description: Option<String>,
     pub title: Option<String>,
     pub image: Option<Image>,
+    pub player: Option<Player>,
 }
 
 impl GraphObject for TwitterGraphObject {
@@ -23,7 +24,7 @@ impl GraphObject for TwitterGraphObject {
         if let Some(first_tag) = data.tags.first() {
 
             if *first_tag == Image::prefix() {
-                let image = self.image.get_or_insert_with(|| Image::default());
+                let image = self.image.get_or_insert(Image::default());
                 image.update_from(data)?;
                 return Ok(());
             }
@@ -31,6 +32,12 @@ impl GraphObject for TwitterGraphObject {
             if *first_tag == Creator::prefix() {
                 let creator = self.creator.get_or_insert(Creator::default());
                 creator.update_from(data)?;
+                return Ok(());
+            }
+
+            if *first_tag == Player::prefix() {
+                let player = self.player.get_or_insert(Player::default());
+                player.update_from(data)?;
                 return Ok(());
             }
 

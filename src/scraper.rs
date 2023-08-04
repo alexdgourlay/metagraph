@@ -86,7 +86,6 @@ impl Scraper for OpenGraphScraper {
 pub struct TwitterScraper {}
 
 impl Scraper for TwitterScraper {
-
     type RootGraphObject = TwitterGraphObject;
 
     fn attribute() -> &'static str {
