@@ -8,12 +8,17 @@ use crate::{
 };
 
 pub trait Scraper {
-
     type RootGraphObject: GraphObject + Default;
 
     /// Get the name of the attribute used for properties.
     fn attribute() -> &'static str {
         "property"
+    }
+
+    fn extract_head(html: &str) -> &str{
+        // Anything before the body element is parsed into the head of the document.
+        let end = html.find("<body>").unwrap_or(html.len()); 
+        &html[0..end]
     }
 
     /// Get the CSS selector for meta elements.
@@ -49,7 +54,8 @@ pub trait Scraper {
         // Parsing validates the supplied url.
         let url = Url::parse(url)?;
 
-        let document = Html::parse_document(html);
+        let head = Self::extract_head(html);
+        let document = Html::parse_document(head);
 
         let selector = Self::selector();
         let elements = document.select(&selector);
@@ -234,12 +240,12 @@ mod tests {
                         <meta property="og:image" content="./image.jpg" />
                     </head>"#,
         );
-        assert_eq!(result.images, Some(
-            vec![Image {
+        assert_eq!(
+            result.images,
+            Some(vec![Image {
                 url: "http://x.com/image.jpg".into(),
                 ..Image::default()
-            }]
-        ))
+            }])
+        )
     }
-
 }
